@@ -6,5 +6,5 @@ matplotlib
 seaborn
 sqlalchemy
 pyodbc
-streamlit-authenticator
+streamlit-authenticator==0.2.2
 plotly
