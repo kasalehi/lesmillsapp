@@ -9,6 +9,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LinearRegression
 import numpy as np
 import streamlit_authenticator as stauth
+import matplotlib.dates as mdates
 
 st.set_page_config(layout="wide", page_title="Les Mills Member Analytics")
 
@@ -40,8 +41,7 @@ authenticator = stauth.Authenticate(
     cookie_expiry_days=1
 )
 
-name, authentication_status, username = authenticator.login('main')
-
+name, authentication_status, username = authenticator.login('Login')
 
 
 
@@ -105,7 +105,7 @@ def load_join_leave_data():
         (SUM(CompJoiners) + SUM(Joiners)) AS Joiners,
         DateParameter
     FROM repo.MSReport_Summary_ActiveMembershipDetail
-    WHERE DateParameter > '2023-01-01'
+    WHERE DateParameter > DATEADD(day,-7,getdate())
     GROUP BY DateParameter
     ORDER BY DateParameter DESC
     """
@@ -159,10 +159,12 @@ def show_forecast():
     ax.set_xlabel('Date')
     ax.set_ylabel('Member Count')
     ax.legend()
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    fig.autofmt_xdate()
     st.pyplot(fig)
     df['Week'] = range(len(df))
     for col in ['Membership_Base', 'Active_Membership']:
-        st.subheader(f"\ud83d\udd2e Forecast for {col}")
+        st.subheader(f"Forecast for {col}")
         model = LinearRegression()
         model.fit(df[['Week']], df[col])
         future_weeks = np.array(range(len(df), len(df) + 6)).reshape(-1, 1)
@@ -182,6 +184,8 @@ def show_join_leave_page():
     ax.set_xlabel('Date')
     ax.set_ylabel('Member Count')
     ax.legend()
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+    fig.autofmt_xdate()
     st.pyplot(fig)
 
     df['Week'] = range(len(df))
@@ -200,6 +204,8 @@ def show_join_leave_page():
         ax.set_xlabel('Date')
         ax.set_ylabel(col)
         ax.legend()
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b'))
+        fig.autofmt_xdate()
         st.pyplot(fig)
         st.dataframe(forecast_df.set_index('Date'))
 
